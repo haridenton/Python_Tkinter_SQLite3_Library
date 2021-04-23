@@ -3,6 +3,7 @@ from tkinter import *
 from tkinter import messagebox
 
 
+
 def nav_forward():
     print("Nav Forward")
     var_recordset_index.set(var_recordset_index.get() + 1)
