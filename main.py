@@ -1,133 +1,133 @@
 import sqlite3
 import tkinter
+import tkinter.messagebox as mb
 
 
-def nav_forward():
-    print("Nav Forward")
-    var_recordset_index.set(var_recordset_index.get() + 1)
-    set_data()
+class MyMainTkinterWindow:
 
+    def __init__(self):
+        self.root = tkinter.Tk()
+        self.root.geometry("500x500")
+        self.root.title("Hello World GUI")
 
-def nav_backward():
-    print("Nav backward")
-    var_recordset_index.set(var_recordset_index.get() - 1)
-    set_data()
+        # CREATE INDEX FOR OUR RETURNED DATA SET
+        self.var_recordset_index = tkinter.IntVar(self.root)
+        self.var_recordset_index.set(0)
+        self.var_rowcount = tkinter.IntVar(self.root)
 
+        self.var_book_id = tkinter.StringVar(self.root)
+        self.var_title = tkinter.StringVar(self.root)
+        self.var_genre = tkinter.StringVar(self.root)
+        self.var_published_date = tkinter.StringVar(self.root)
 
-def load_books():
-    conn = sqlite3.connect('library.db')
-    c = conn.cursor()
-    c.execute("SELECT * FROM books")
-    data = c.fetchall()
-    var_rowcount.set(c.rowcount)
-    row = data[0]
-    print(row[1])
-    return data
+        self.book_window_label = tkinter.Label(self.root, text="Library System: BOOKS")
+        self.book_window_label.grid(row=0, column=0, columnspan=2)
+        self.book_id = tkinter.Label(self.root, text="Book ID:")
+        self.book_id.grid(padx=20, pady=20, row=1, column=0)
+        self.book_id_entry = tkinter.Entry(self.root, textvariable=self.var_book_id, bd=3)
+        self.book_id_entry.grid(padx=20, pady=20, row=1, column=1)
+        self.title = tkinter.Label(self.root, text="Title:")
+        self.title.grid(padx=20, pady=20, row=2, column=0)
+        self.title_entry = tkinter.Entry(self.root, textvariable=self.var_title, bd=3)
+        self.title_entry.grid(padx=20, pady=20, row=2, column=1)
+        self.genre = tkinter.Label(self.root, text="Genre:")
+        self.genre.grid(padx=20, pady=20, row=3, column=0)
+        self.genre_entry = tkinter.Entry(self.root, textvariable=self.var_genre, bd=3)
+        self.genre_entry.grid(padx=20, pady=20, row=3, column=1)
+        self.published_date = tkinter.Label(self.root, text="Published Date:")
+        self.published_date.grid(padx=20, pady=20, row=4, column=0)
+        self.published_date_entry = tkinter.Entry(self.root, textvariable=self.var_published_date, bd=3)
+        self.published_date_entry.grid(padx=20, pady=20, row=4, column=1)
 
+        self.nav_backward_btn = tkinter.Button(self.root, text="<", command=self.nav_backward)
+        self.nav_backward_btn.grid(row=6, column=0)
+        self.nav_forward_btn = tkinter.Button(self.root, text=">", command=self.nav_forward)
+        self.nav_forward_btn.grid(row=6, column=3)
 
-def set_data():
-    data = load_books()
-    row = data[var_recordset_index.get()]
-    var_book_id.set(row[0])  # ID
-    var_title.set(row[1])
-    var_genre.set(row[2])
-    var_published_date.set(row[3])
+        self.insert_btn = tkinter.Button(self.root, text="INSERT", command=self.insert, state="disabled")
+        self.insert_btn.grid(row=7, column=0)
+        self.update_btn = tkinter.Button(self.root, text="UPDATE", command=self.update)
+        self.update_btn.grid(row=7, column=1)
+        self.delete_btn = tkinter.Button(self.root, text="DELETE", command=self.delete)
+        self.delete_btn.grid(row=7, column=2)
+        self.new_btn = tkinter.Button(self.root, text="NEW", command=self.new)
+        self.new_btn.grid(row=7, column=3)
 
+    def nav_forward(self):
+        print("Nav Forward")
+        self.var_recordset_index.set(self.var_recordset_index.get() + 1)
+        self.set_data()
 
-def insert():
-    print("INSERT")
-    book = [var_title.get(), var_genre.get(), var_published_date.get()]
-    insert_query = "INSERT INTO books VALUES (null,?,?,?)"
-    conn = sqlite3.connect('library.db')
-    c = conn.cursor()
-    c.execute(insert_query, book)
-    conn.commit()
-    set_data()
-    insert_btn["state"] = "disabled"
+    def nav_backward(self):
+        print("Nav backward")
+        self.var_recordset_index.set(self.var_recordset_index.get() - 1)
+        self.set_data()
 
+    def set_data(self):
+        data = self.load_books()
+        row = data[self.var_recordset_index.get()]
+        self.var_book_id.set(row[0])  # ID
+        self.var_title.set(row[1])
+        self.var_genre.set(row[2])
+        self.var_published_date.set(row[3])
 
-def update():
-    print("UPDATE")
-    book = [var_title.get(), var_genre.get(), var_published_date.get(), var_book_id.get()]
-    update_query = "UPDATE books SET title=? , genre=?, published_date= ? WHERE book_id=?"
-    conn = sqlite3.connect('library.db')
-    c = conn.cursor()
-    c.execute(update_query, book)
-    conn.commit()
-    set_data()
-
-
-def new():
-    var_title.set("")
-    var_genre.set("")
-    var_published_date.set("")
-    var_book_id.set("")
-    insert_btn["state"] = "active"
-    print("NEW")
-
-
-def delete():
-    MsgBox = tkinter.messagebox.askquestion('DELETE RECORD',
-                                            'Are you sure you want to delete the current record? This cannot be undone.',
-                                            icon='warning')
-    if MsgBox == 'yes':
+    def load_books(self):
         conn = sqlite3.connect('library.db')
         c = conn.cursor()
-        delete_query = "DELETE FROM books WHERE book_id=" + str(var_book_id.get())
-        print(delete_query)
-        c.execute(delete_query)
+        c.execute("SELECT * FROM books")
+        data = c.fetchall()
+        #self.root.var_rowcount.set(c.rowcount)
+        row = data[0]
+        print(row[1])
+        return data
+
+    def insert(self):
+        print("INSERT")
+        book = [self.var_title.get(), self.var_genre.get(), self.var_published_date.get()]
+        insert_query = "INSERT INTO books VALUES (null,?,?,?)"
+        conn = sqlite3.connect('library.db')
+        c = conn.cursor()
+        c.execute(insert_query, book)
         conn.commit()
-        set_data()
+        self.set_data()
+        self.insert_btn["state"] = "disabled"
 
-    print("DELETED")
+    def update(self):
+        print("UPDATE")
+        book = [self.var_title.get(), self.var_genre.get(), self.var_published_date.get(),
+                self.var_book_id.get()]
+        update_query = "UPDATE books SET title=? , genre=?, published_date= ? WHERE book_id=?"
+        conn = sqlite3.connect('library.db')
+        c = conn.cursor()
+        c.execute(update_query, book)
+        conn.commit()
+        self.set_data()
+
+    def new(self):
+        self.var_title.set("")
+        self.var_genre.set("")
+        self.var_published_date.set("")
+        self.var_book_id.set("")
+        self.insert_btn["state"] = "active"
+        print("NEW")
+
+    def delete(self):
+        MsgBox = mb.askquestion('DELETE RECORD',
+                                                'Are you sure you want to delete the current record? This cannot be undone.',
+                                                icon='warning')
+        if MsgBox == 'yes':
+            conn = sqlite3.connect('library.db')
+            c = conn.cursor()
+            delete_query = "DELETE FROM books WHERE book_id=" + str(self.var_book_id.get())
+            print(delete_query)
+            c.execute(delete_query)
+            conn.commit()
+            self.set_data()
+
+        print("DELETED")
 
 
-root = tkinter.Tk()
-root.geometry("500x500")
-root.title("Hello World GUI")
-
-# CREATE INDEX FOR OUR RETURNED DATA SET
-var_recordset_index = tkinter.IntVar()
-var_recordset_index.set(0)
-var_rowcount = tkinter.IntVar()
-
-var_book_id = tkinter.StringVar(root)
-var_title = tkinter.StringVar(root)
-var_genre = tkinter.StringVar(root)
-var_published_date = tkinter.StringVar(root)
-
-book_window_label = tkinter.Label(root, text="Library System: BOOKS")
-book_window_label.grid(row=0, column=0, columnspan=2)
-book_id = tkinter.Label(root, text="Book ID:")
-book_id.grid(padx=20, pady=20, row=1, column=0)
-book_id_entry = tkinter.Entry(root, textvariable=var_book_id, bd=3)
-book_id_entry.grid(padx=20, pady=20, row=1, column=1)
-title = tkinter.Label(root, text="Title:")
-title.grid(padx=20, pady=20, row=2, column=0)
-title_entry = tkinter.Entry(root, textvariable=var_title, bd=3)
-title_entry.grid(padx=20, pady=20, row=2, column=1)
-genre = tkinter.Label(root, text="Genre:")
-genre.grid(padx=20, pady=20, row=3, column=0)
-genre_entry = tkinter.Entry(root, textvariable=var_genre, bd=3)
-genre_entry.grid(padx=20, pady=20, row=3, column=1)
-published_date = tkinter.Label(root, text="Published Date:")
-published_date.grid(padx=20, pady=20, row=4, column=0)
-published_date_entry = tkinter.Entry(root, textvariable=var_published_date, bd=3)
-published_date_entry.grid(padx=20, pady=20, row=4, column=1)
-
-nav_backward_btn = tkinter.Button(root, text="<", command=nav_backward)
-nav_backward_btn.grid(row=6, column=0)
-nav_forward_btn = tkinter.Button(root, text=">", command=nav_forward)
-nav_forward_btn.grid(row=6, column=3)
-
-insert_btn = tkinter.Button(root, text="INSERT", command=insert, state="disabled")
-insert_btn.grid(row=7, column=0)
-update_btn = tkinter.Button(root, text="UPDATE", command=update)
-update_btn.grid(row=7, column=1)
-delete_btn = tkinter.Button(root, text="DELETE", command=delete)
-delete_btn.grid(row=7, column=2)
-new_btn = tkinter.Button(root, text="NEW", command=new)
-new_btn.grid(row=7, column=3)
-
-set_data()
-root.mainloop()
+if __name__ == "__main__":
+    myApp = MyMainTkinterWindow()
+    myApp.set_data()
+    myApp.root.mainloop()
